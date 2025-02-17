@@ -1,18 +1,47 @@
 import styled from 'styled-components';
-import type { Task } from '../features/tasks/tasksApiSlice';
+import {
+    useDeleteTaskMutation,
+    useGetTasksQuery,
+    type Task,
+} from '../features/tasks/tasksApiSlice';
+import { useState } from 'react';
 
 interface TaskCardProps {
     task: Task;
 }
 
 const TaskCard = ({ task }: TaskCardProps) => {
+    const [deleteTask, { isLoading: isDeleteLoading }] =
+        useDeleteTaskMutation();
+    const { refetch, isFetching: isGetFetching } = useGetTasksQuery();
+
+    // ensure isLoading state is only associated with this task ID
+    const [thisId, setThisId] = useState<string>('');
+    const isLoading = isDeleteLoading || (isGetFetching && thisId === task.id);
+
+    const handleDelete = async () => {
+        try {
+            setThisId(task.id);
+            await deleteTask(task.id);
+            await refetch();
+        } catch (err) {
+            console.error('Error deleting task:', err);
+        }
+    };
+
+    const DeleteButton = () => (
+        <button disabled={isLoading} onClick={handleDelete}>
+            Delete
+        </button>
+    );
+
     if (task.taskStatus === 'COMPLETED') {
         return (
             <Wrapper>
                 <CompletedTaskText>{task.content}</CompletedTaskText>
                 <ButtonArea>
                     <ButtonTopRow>
-                        <DeleteButton>Delete</DeleteButton>
+                        <DeleteButton />
                     </ButtonTopRow>
                 </ButtonArea>
             </Wrapper>
@@ -24,10 +53,10 @@ const TaskCard = ({ task }: TaskCardProps) => {
             <TaskText>{task.content}</TaskText>
             <ButtonArea>
                 <ButtonTopRow>
-                    <EditButton>Edit</EditButton>
-                    <DeleteButton>Delete</DeleteButton>
+                    <EditButton disabled={isLoading}>Edit</EditButton>
+                    <DeleteButton />
                 </ButtonTopRow>
-                <MarkDoneButton>Mark Done</MarkDoneButton>
+                <MarkDoneButton disabled={isLoading}>Mark Done</MarkDoneButton>
             </ButtonArea>
         </Wrapper>
     );
@@ -58,7 +87,6 @@ const ButtonTopRow = styled.div`
 `;
 
 const EditButton = styled.button``;
-const DeleteButton = styled.button``;
 const MarkDoneButton = styled.button`
     width: 100%;
 `;

@@ -42,7 +42,15 @@ export const tasksApiSlice = createApi({
             }),
             invalidatesTags: ['Tasks'],
         }),
+        deleteTask: build.mutation<void, string>({
+            query: (id) => ({
+                url: `/${id}`,
+                method: 'DELETE',
+            }),
+            invalidatesTags: ['Tasks'],
+        }),
     }),
 });
 
-export const { useGetTasksQuery, usePostTaskMutation } = tasksApiSlice;
+export const { useGetTasksQuery, usePostTaskMutation, useDeleteTaskMutation } =
+    tasksApiSlice;
