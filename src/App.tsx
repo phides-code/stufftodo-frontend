@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import { MobileProvider } from './MobileContext';
-import MainComponent from './MainComponent';
+import MainComponent from './components/MainComponent';
 
 const App = () => {
     return (
