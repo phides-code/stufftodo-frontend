@@ -78,7 +78,6 @@ const ListHeaderText = styled.div`
 `;
 
 const ButtonArea = styled.div``;
-
 const CreateButton = styled.button``;
 const RefreshButton = styled.button``;
 

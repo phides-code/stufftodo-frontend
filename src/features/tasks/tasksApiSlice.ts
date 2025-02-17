@@ -32,10 +32,17 @@ export const tasksApiSlice = createApi({
     endpoints: (build) => ({
         getTasks: build.query<TasksApiResponse, void>({
             query: () => '',
-            // providesTags: (result, error, id) => [{ type: 'Tasks', id }],
             providesTags: ['Tasks'],
+        }),
+        postTask: build.mutation<Task, Partial<Task>>({
+            query: (newTask) => ({
+                url: '',
+                method: 'POST',
+                body: newTask,
+            }),
+            invalidatesTags: ['Tasks'],
         }),
     }),
 });
 
-export const { useGetTasksQuery } = tasksApiSlice;
+export const { useGetTasksQuery, usePostTaskMutation } = tasksApiSlice;
