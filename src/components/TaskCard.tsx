@@ -2,6 +2,7 @@ import styled from 'styled-components';
 import {
     useDeleteTaskMutation,
     useGetTasksQuery,
+    usePutTaskMutation,
     type Task,
 } from '../features/tasks/tasksApiSlice';
 import { useState } from 'react';
@@ -11,22 +12,95 @@ interface TaskCardProps {
 }
 
 const TaskCard = ({ task }: TaskCardProps) => {
-    const [deleteTask, { isLoading: isDeleteLoading }] =
-        useDeleteTaskMutation();
+    const [
+        deleteTask,
+        { isLoading: isDeleteLoading, isError: errorWhileDeleting },
+    ] = useDeleteTaskMutation();
+    const [putTask, { isLoading: isPutLoading, isError: errorWhileUpdating }] =
+        usePutTaskMutation();
     const { refetch, isFetching: isGetFetching } = useGetTasksQuery();
+
+    const [editingMode, setEditingMode] = useState<boolean>(false);
+    const [editedTaskContent, setEditedTaskContent] = useState<string>('');
 
     // ensure isLoading state is only associated with this task ID
     const [thisId, setThisId] = useState<string>('');
-    const isLoading = isDeleteLoading || (isGetFetching && thisId === task.id);
+    const isLoading =
+        (isDeleteLoading || isPutLoading || isGetFetching) &&
+        thisId === task.id;
 
     const handleDelete = async () => {
         try {
             setThisId(task.id);
-            await deleteTask(task.id);
+
+            const deleteResult = await deleteTask(task.id).unwrap();
+
+            if (deleteResult.errorMessage) {
+                throw new Error(deleteResult.errorMessage);
+            }
+
             await refetch();
         } catch (err) {
             console.error('Error deleting task:', err);
+        } finally {
+            setThisId('');
         }
+    };
+
+    const handleOnChange = (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setEditedTaskContent(ev.target.value);
+    };
+
+    const handleSave = async (ev: React.FormEvent) => {
+        ev.preventDefault();
+
+        try {
+            setThisId(task.id);
+            const putResult = await putTask({
+                ...task,
+                content: editedTaskContent,
+            }).unwrap();
+
+            if (putResult.errorMessage) {
+                throw new Error(putResult.errorMessage);
+            }
+
+            await refetch();
+            setEditingMode(false);
+        } catch (err) {
+            console.error('Error updating task: ', err);
+        } finally {
+            setThisId('');
+        }
+    };
+
+    const handleMarkDone = async (
+        ev: React.MouseEvent<HTMLButtonElement, MouseEvent>
+    ) => {
+        ev.preventDefault();
+
+        try {
+            setThisId(task.id);
+            const putResult = await putTask({
+                ...task,
+                taskStatus: 'COMPLETED',
+            }).unwrap();
+
+            if (putResult.errorMessage) {
+                throw new Error(putResult.errorMessage);
+            }
+
+            await refetch();
+        } catch (err) {
+            console.error('Error updating task: ', err);
+        } finally {
+            setThisId('');
+        }
+    };
+
+    const enableEditingMode = () => {
+        setEditedTaskContent(task.content);
+        setEditingMode(true);
     };
 
     const DeleteButton = () => (
@@ -35,10 +109,47 @@ const TaskCard = ({ task }: TaskCardProps) => {
         </button>
     );
 
+    if (editingMode) {
+        return (
+            <Wrapper>
+                <form onSubmit={handleSave}>
+                    <TaskInputArea>
+                        <InputTitle>Editing Task:</InputTitle>
+                        <StyledTextArea
+                            disabled={isLoading}
+                            value={editedTaskContent}
+                            onChange={handleOnChange}
+                        />
+                        {errorWhileUpdating && (
+                            <EditingErrorMessage>
+                                Error updating task
+                            </EditingErrorMessage>
+                        )}
+                    </TaskInputArea>
+                    <EditingButtonArea>
+                        <SaveButton disabled={isLoading}>Save</SaveButton>
+                        <CancelButton
+                            disabled={isLoading}
+                            onClick={() => setEditingMode(false)}
+                        >
+                            Cancel
+                        </CancelButton>
+                    </EditingButtonArea>
+                </form>
+            </Wrapper>
+        );
+    }
+
     if (task.taskStatus === 'COMPLETED') {
         return (
             <Wrapper>
-                <CompletedTaskText>{task.content}</CompletedTaskText>
+                <CompletedTaskText>
+                    <div>{task.content}</div>
+
+                    {errorWhileDeleting && (
+                        <ErrorMessage>Error deleting task</ErrorMessage>
+                    )}
+                </CompletedTaskText>
                 <ButtonArea>
                     <ButtonTopRow>
                         <DeleteButton />
@@ -50,29 +161,48 @@ const TaskCard = ({ task }: TaskCardProps) => {
 
     return (
         <Wrapper>
-            <TaskText>{task.content}</TaskText>
+            <TaskText>
+                <div>{task.content}</div>
+                {errorWhileDeleting && (
+                    <ErrorMessage>Error deleting task</ErrorMessage>
+                )}
+
+                {errorWhileUpdating && (
+                    <ErrorMessage>Error updating task</ErrorMessage>
+                )}
+            </TaskText>
+
             <ButtonArea>
                 <ButtonTopRow>
-                    <EditButton disabled={isLoading}>Edit</EditButton>
+                    <EditButton
+                        disabled={isLoading}
+                        onClick={enableEditingMode}
+                    >
+                        Edit
+                    </EditButton>
                     <DeleteButton />
                 </ButtonTopRow>
-                <MarkDoneButton disabled={isLoading}>Mark Done</MarkDoneButton>
+
+                <MarkDoneButton onClick={handleMarkDone} disabled={isLoading}>
+                    Mark Done
+                </MarkDoneButton>
             </ButtonArea>
         </Wrapper>
     );
 };
 
 const Wrapper = styled.div`
+    padding: 0.5rem;
     display: flex;
     justify-content: space-between;
     border: 1px solid grey;
-    padding: 0.5rem;
 `;
 
 const TaskText = styled.div`
     display: flex;
+    flex-direction: column;
     margin-right: 0.5rem;
-    align-items: center;
+    justify-content: center;
 `;
 
 const CompletedTaskText = styled(TaskText)`
@@ -89,6 +219,31 @@ const ButtonTopRow = styled.div`
 const EditButton = styled.button``;
 const MarkDoneButton = styled.button`
     width: 100%;
+`;
+
+const TaskInputArea = styled.div``;
+const InputTitle = styled.div``;
+
+const StyledTextArea = styled.textarea`
+    resize: none;
+    height: 3.5rem;
+    width: 100%;
+`;
+
+const EditingButtonArea = styled.div`
+    display: flex;
+    align-items: center;
+`;
+
+const SaveButton = styled.button``;
+const CancelButton = styled.button``;
+
+const ErrorMessage = styled.div`
+    color: red;
+`;
+
+const EditingErrorMessage = styled(ErrorMessage)`
+    margin-bottom: 0.5rem;
 `;
 
 export default TaskCard;

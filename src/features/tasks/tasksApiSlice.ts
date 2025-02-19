@@ -21,6 +21,11 @@ interface TasksApiResponse {
     errorMessage: string | null;
 }
 
+interface TaskApiResponse {
+    data: Task | null;
+    errorMessage: string | null;
+}
+
 export const tasksApiSlice = createApi({
     baseQuery: fetchBaseQuery({
         baseUrl: TASKS_SERVICE_URL,
@@ -28,29 +33,36 @@ export const tasksApiSlice = createApi({
     }),
 
     reducerPath: 'tasksApi',
-    tagTypes: ['Tasks'],
     endpoints: (build) => ({
         getTasks: build.query<TasksApiResponse, void>({
             query: () => '',
-            providesTags: ['Tasks'],
         }),
-        postTask: build.mutation<Task, Partial<Task>>({
+        postTask: build.mutation<TaskApiResponse, Partial<Task>>({
             query: (newTask) => ({
                 url: '',
                 method: 'POST',
                 body: newTask,
             }),
-            invalidatesTags: ['Tasks'],
         }),
-        deleteTask: build.mutation<void, string>({
+        deleteTask: build.mutation<TaskApiResponse, string>({
             query: (id) => ({
                 url: `/${id}`,
                 method: 'DELETE',
             }),
-            invalidatesTags: ['Tasks'],
+        }),
+        putTask: build.mutation<TaskApiResponse, Partial<Task>>({
+            query: (updatedTask) => ({
+                url: `/${updatedTask.id}`,
+                method: 'PUT',
+                body: updatedTask,
+            }),
         }),
     }),
 });
 
-export const { useGetTasksQuery, usePostTaskMutation, useDeleteTaskMutation } =
-    tasksApiSlice;
+export const {
+    useGetTasksQuery,
+    usePostTaskMutation,
+    useDeleteTaskMutation,
+    usePutTaskMutation,
+} = tasksApiSlice;

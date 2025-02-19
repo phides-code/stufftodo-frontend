@@ -26,13 +26,18 @@ const NewTaskDialog = ({ setShowNewTaskDialog }: NewTaskDialogProps) => {
         ev.preventDefault();
 
         try {
-            await postTask({
+            const postResult = await postTask({
                 content: newTaskContent,
-            });
+            }).unwrap();
+
+            if (postResult.errorMessage) {
+                throw new Error(postResult.errorMessage);
+            }
+
             await refetch();
             setShowNewTaskDialog(false);
         } catch (err) {
-            console.error('Failed to save new task: ', err);
+            console.error('Error creating new task: ', err);
         }
     };
 
@@ -47,6 +52,9 @@ const NewTaskDialog = ({ setShowNewTaskDialog }: NewTaskDialogProps) => {
                         onChange={handleOnChange}
                     />
                 </TaskInputArea>
+                {isError && (
+                    <ErrorMessage>Error creating new task</ErrorMessage>
+                )}
                 <ButtonArea>
                     <SaveButton disabled={isLoading}>Save</SaveButton>
                     <CancelButton
@@ -57,8 +65,6 @@ const NewTaskDialog = ({ setShowNewTaskDialog }: NewTaskDialogProps) => {
                     </CancelButton>
                 </ButtonArea>
             </form>
-
-            {isError && <div>Error saving new task</div>}
         </Wrapper>
     );
 };
@@ -85,5 +91,10 @@ const ButtonArea = styled.div`
 
 const SaveButton = styled.button``;
 const CancelButton = styled.button``;
+
+const ErrorMessage = styled.div`
+    margin-bottom: 0.5rem;
+    color: red;
+`;
 
 export default NewTaskDialog;

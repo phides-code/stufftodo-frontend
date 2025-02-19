@@ -1,13 +1,10 @@
 import styled from 'styled-components';
-import { MobileProvider } from './MobileContext';
-import MainComponent from './components/MainComponent';
+import TasksList from './components/TasksList';
 
 const App = () => {
     return (
         <Wrapper>
-            <MobileProvider>
-                <MainComponent />
-            </MobileProvider>
+            <TasksList />
         </Wrapper>
     );
 };

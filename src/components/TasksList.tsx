@@ -6,13 +6,14 @@ import NewTaskDialog from './NewTaskDialog';
 import { useState } from 'react';
 
 const TasksList = () => {
-    const { data, error, isLoading } = useGetTasksQuery();
+    const { data, isLoading, isError, isSuccess } = useGetTasksQuery();
 
     const [showNewTaskDialog, setShowNewTaskDialog] = useState<boolean>(false);
 
     if (isLoading) return <p>Loading tasks...</p>;
-    if (error) return <p>Error loading tasks</p>;
-
+    if (isError || !isSuccess) {
+        return <p>Error loading tasks</p>;
+    }
     const tasks = data?.data as Task[];
 
     if (tasks.length === 0) return <p>No tasks found</p>;
