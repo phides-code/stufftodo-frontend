@@ -24,3 +24,5 @@ dist-ssr
 *.sw?
 
 .env
+
+s3-deploy
