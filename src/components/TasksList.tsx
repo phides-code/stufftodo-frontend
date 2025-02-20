@@ -6,7 +6,8 @@ import NewTaskDialog from './NewTaskDialog';
 import { useState } from 'react';
 
 const TasksList = () => {
-    const { data, isLoading, isError, isSuccess } = useGetTasksQuery();
+    const { data, isLoading, isError, isSuccess, refetch, isFetching } =
+        useGetTasksQuery();
 
     const [showNewTaskDialog, setShowNewTaskDialog] = useState<boolean>(false);
 
@@ -40,6 +41,10 @@ const TasksList = () => {
         });
     };
 
+    const handleRefresh = () => {
+        refetch();
+    };
+
     const sortedTasks = sortTasks(tasks);
 
     return (
@@ -50,7 +55,12 @@ const TasksList = () => {
                     <CreateButton onClick={() => setShowNewTaskDialog(true)}>
                         New Task
                     </CreateButton>
-                    <RefreshButton>Refresh</RefreshButton>
+                    <RefreshButton
+                        onClick={handleRefresh}
+                        disabled={isFetching}
+                    >
+                        Refresh
+                    </RefreshButton>
                 </ButtonArea>
             </ListHeader>
             {showNewTaskDialog && (
