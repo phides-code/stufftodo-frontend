@@ -11,6 +11,8 @@ interface TaskCardProps {
     task: Task;
 }
 
+const MAX_LENGTH = 100;
+
 const TaskCard = ({ task }: TaskCardProps) => {
     const [
         deleteTask,
@@ -103,6 +105,14 @@ const TaskCard = ({ task }: TaskCardProps) => {
         setEditingMode(true);
     };
 
+    const truncate = (str: string) => {
+        if (str.length > MAX_LENGTH) {
+            return str.substring(0, MAX_LENGTH) + ' (truncated)';
+        }
+
+        return str;
+    };
+
     const DeleteButton = () => (
         <button disabled={isLoading} onClick={handleDelete}>
             Delete
@@ -144,7 +154,7 @@ const TaskCard = ({ task }: TaskCardProps) => {
         return (
             <Wrapper>
                 <CompletedTaskText>
-                    <div>{task.content}</div>
+                    <div>{truncate(task.content)}</div>
 
                     {errorWhileDeleting && (
                         <ErrorMessage>Error deleting task</ErrorMessage>
@@ -162,7 +172,7 @@ const TaskCard = ({ task }: TaskCardProps) => {
     return (
         <Wrapper>
             <TaskText>
-                <div>{task.content}</div>
+                <div>{truncate(task.content)}</div>
                 {errorWhileDeleting && (
                     <ErrorMessage>Error deleting task</ErrorMessage>
                 )}
