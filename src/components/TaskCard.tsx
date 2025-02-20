@@ -31,6 +31,19 @@ const TaskCard = ({ task }: TaskCardProps) => {
         (isDeleteLoading || isPutLoading || isGetFetching) &&
         thisId === task.id;
 
+    const buildDateString = (epochTime: number): string => {
+        const d = new Date(epochTime);
+        return d.toDateString() + ', ' + d.toLocaleTimeString();
+    };
+
+    const truncate = (str: string) => {
+        if (str.length > MAX_LENGTH) {
+            return str.substring(0, MAX_LENGTH) + ' (truncated)';
+        }
+
+        return str;
+    };
+
     const handleDelete = async () => {
         try {
             setThisId(task.id);
@@ -105,13 +118,11 @@ const TaskCard = ({ task }: TaskCardProps) => {
         setEditingMode(true);
     };
 
-    const truncate = (str: string) => {
-        if (str.length > MAX_LENGTH) {
-            return str.substring(0, MAX_LENGTH) + ' (truncated)';
-        }
-
-        return str;
-    };
+    const TaskContent = () => (
+        <div title={'Created on ' + buildDateString(task.createdOn)}>
+            {truncate(task.content)}
+        </div>
+    );
 
     const DeleteButton = () => (
         <button disabled={isLoading} onClick={handleDelete}>
@@ -154,11 +165,13 @@ const TaskCard = ({ task }: TaskCardProps) => {
         return (
             <Wrapper>
                 <CompletedTaskText>
-                    <div>{truncate(task.content)}</div>
-
+                    <TaskContent />
                     {errorWhileDeleting && (
                         <ErrorMessage>Error deleting task</ErrorMessage>
                     )}
+                    <CompletedDate>
+                        {`Completed on ` + buildDateString(task.completedOn)}
+                    </CompletedDate>
                 </CompletedTaskText>
                 <ButtonArea>
                     <ButtonTopRow>
@@ -172,11 +185,10 @@ const TaskCard = ({ task }: TaskCardProps) => {
     return (
         <Wrapper>
             <TaskText>
-                <div>{truncate(task.content)}</div>
+                <TaskContent />
                 {errorWhileDeleting && (
                     <ErrorMessage>Error deleting task</ErrorMessage>
                 )}
-
                 {errorWhileUpdating && (
                     <ErrorMessage>Error updating task</ErrorMessage>
                 )}
@@ -217,6 +229,10 @@ const TaskText = styled.div`
 
 const CompletedTaskText = styled(TaskText)`
     color: grey;
+`;
+
+const CompletedDate = styled.div`
+    font-size: small;
 `;
 
 const ButtonArea = styled.div``;
