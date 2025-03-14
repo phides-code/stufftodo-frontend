@@ -89,8 +89,15 @@ const ButtonArea = styled.div`
     align-items: center;
 `;
 
-const SaveButton = styled.button``;
-const CancelButton = styled.button``;
+const BaseButton = styled.button`
+    height: 2rem;
+    margin-left: 0.5rem;
+    border: 1px solid grey;
+    border-radius: 0.5rem;
+`;
+
+const SaveButton = styled(BaseButton)``;
+const CancelButton = styled(BaseButton)``;
 
 const ErrorMessage = styled.div`
     margin-bottom: 0.5rem;

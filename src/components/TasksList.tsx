@@ -89,7 +89,18 @@ const ListHeaderText = styled.div`
 `;
 
 const ButtonArea = styled.div``;
-const CreateButton = styled.button``;
-const RefreshButton = styled.button``;
+
+const BaseButton = styled.button`
+    height: 2rem;
+    margin-left: 0.5rem;
+    border: 1px solid grey;
+    border-radius: 0.5rem;
+`;
+
+const CreateButton = styled(BaseButton)`
+    background-color: green;
+    color: white;
+`;
+const RefreshButton = styled(BaseButton)``;
 
 export default TasksList;

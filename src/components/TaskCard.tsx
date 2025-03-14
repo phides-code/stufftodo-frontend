@@ -125,9 +125,9 @@ const TaskCard = ({ task }: TaskCardProps) => {
     );
 
     const DeleteButton = () => (
-        <button disabled={isLoading} onClick={handleDelete}>
+        <StyledDeleteButton disabled={isLoading} onClick={handleDelete}>
             Delete
-        </button>
+        </StyledDeleteButton>
     );
 
     if (editingMode) {
@@ -242,9 +242,27 @@ const ButtonTopRow = styled.div`
     justify-content: space-between;
 `;
 
-const EditButton = styled.button``;
-const MarkDoneButton = styled.button`
-    width: 100%;
+const BaseButton = styled.button`
+    height: 2rem;
+    margin-left: 0.2rem;
+    border: 1px solid grey;
+    border-radius: 0.5rem;
+`;
+
+const EditButton = styled(BaseButton)`
+    width: 3rem;
+`;
+const MarkDoneButton = styled(BaseButton)`
+    margin-top: 0.2rem;
+    width: 93%;
+    margin-left: 0.2rem;
+    background-color: green;
+    color: white;
+`;
+
+const StyledDeleteButton = styled(BaseButton)`
+    background-color: red;
+    color: white;
 `;
 
 const TaskInputArea = styled.div``;
@@ -261,8 +279,8 @@ const EditingButtonArea = styled.div`
     align-items: center;
 `;
 
-const SaveButton = styled.button``;
-const CancelButton = styled.button``;
+const SaveButton = styled(BaseButton)``;
+const CancelButton = styled(BaseButton)``;
 
 const ErrorMessage = styled.div`
     color: red;
